@@ -18,28 +18,77 @@ const timeKeeper = (timeA, timeB) => {
 
   const contentRow = [];
 
-  for (header of hours) {
-    if (header < clockIn.hours) {
-      contentRow.push('0');
-    } else if (header === clockIn.hours) {
-      if (clockIn.hours === clockOut.hours) {
-        contentRow.push(
-          60 * (clockOut.minutes - clockIn.minutes) +
-            (clockOut.seconds - clockIn.seconds)
-        );
-      } else {
-        contentRow.push(60 * (60 - clockIn.minutes) - clockIn.seconds);
+  if (clockIn.date === clockOut.date) {
+    const onlyRow = [];
+
+    for (header of hours) {
+      if (header < clockIn.hours) {
+        onlyRow.push('0');
+      } else if (header === clockIn.hours) {
+        if (clockIn.hours === clockOut.hours) {
+          onlyRow.push(
+            60 * (clockOut.minutes - clockIn.minutes) +
+              (clockOut.seconds - clockIn.seconds)
+          );
+        } else {
+          onlyRow.push(60 * (60 - clockIn.minutes) - clockIn.seconds);
+        }
+      } else if (header < clockOut.hours) {
+        onlyRow.push('3600');
+      } else if (header === clockOut.hours) {
+        onlyRow.push(60 * clockOut.minutes + clockOut.seconds);
+      } else onlyRow.push('0');
+    }
+
+    contentRow.push(onlyRow);
+  } else {
+    for (
+      let i = parseInt(clockIn.date.substring(8, 10));
+      i <= parseInt(clockOut.date.substring(8, 10));
+      i++
+    ) {
+      let row = [];
+      if (i === parseInt(clockIn.date.substring(8, 10))) {
+        for (header of hours) {
+          if (header < clockIn.hours) {
+            row.push('0');
+          } else if (header === clockIn.hours) {
+            row.push(60 * (60 - clockIn.minutes) - clockIn.seconds);
+          } else {
+            row.push(`3600`);
+          }
+        }
+      } else if (
+        i < parseInt(clockOut.date.substring(8, 10)) &&
+        i !== parseInt(clockOut.date.substring(8, 10))
+      ) {
+        for (header of hours) {
+          row.push(`3600`);
+        }
+      } else if (i === parseInt(clockOut.date.substring(8, 10))) {
+        for (header of hours) {
+          if (header < clockOut.hours) {
+            row.push('3600');
+          } else if (header === clockOut.hours) {
+            row.push(60 * clockOut.minutes + clockOut.seconds);
+          } else {
+            row.push(`0`);
+          }
+        }
       }
-    } else if (header < clockOut.hours) {
-      contentRow.push('3600');
-    } else if (header === clockOut.hours) {
-      contentRow.push(60 * clockOut.minutes + clockOut.seconds);
-    } else contentRow.push('0');
+      contentRow.push(row);
+    }
   }
 
   const rows = [
     [`DATE`, ...hours.map(header => `HOUR_${header}`)],
-    [clockIn.date, ...contentRow],
+    ...contentRow.map((row, index, array) => {
+      if (index + 1 === array.length) {
+        return [clockOut.date, ...row];
+      } else {
+        return [clockIn.date, ...row];
+      }
+    }),
   ];
 
   const csvContent =
