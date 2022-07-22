@@ -68,18 +68,29 @@ const timeKeeper = (timeA, timeB) => {
 
   const contentRow = [];
 
+  const multiContentRow = [];
+
   for (header of headerRow) {
     if (parseInt(header.replace(`HOUR_`, ``)) < parseInt(clockIn.hours)) {
       contentRow.push('0');
     } else if (
       parseInt(header.replace(`HOUR_`, ``)) === parseInt(clockIn.hours)
     ) {
-      contentRow.push(
-        (
-          60 * (60 - parseInt(clockIn.minutes)) -
-          parseInt(clockIn.seconds)
-        ).toString()
-      );
+      if (clockIn.hours === clockOut.hours) {
+        contentRow.push(
+          (
+            60 * (parseInt(clockOut.minutes) - parseInt(clockIn.minutes)) +
+            (parseInt(clockOut.seconds) - parseInt(clockIn.seconds))
+          ).toString()
+        );
+      } else {
+        contentRow.push(
+          (
+            60 * (60 - parseInt(clockIn.minutes)) -
+            parseInt(clockIn.seconds)
+          ).toString()
+        );
+      }
     } else if (
       parseInt(header.replace(`HOUR_`, ``)) < parseInt(clockOut.hours)
     ) {
@@ -106,7 +117,7 @@ const timeKeeper = (timeA, timeB) => {
     'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
 
   var encodedUri = encodeURI(csvContent);
-  window.open(encodedUri);
+  // window.open(encodedUri);
 };
 
-timeKeeper(`2021-12-24 08:35:41`, `2021-12-24 17:53:50`);
+timeKeeper(`2021-12-24 08:35:41`, `2021-12-24 08:45:51`);
