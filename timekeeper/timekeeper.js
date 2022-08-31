@@ -1,112 +1,109 @@
+// Assumptions:
+// - the two parameters passed into the function will always be a string type with the format `YYYY-MM-DD hh:mm:ss`
+
+// Limitations:
+// - can handle timescales in the same hour, same day, or over two days in the same month
+// - can currently only handle a single pair of dates (i.e. a start and finish times)
+// - currently needs the window object of the browser context to generate a csv, so this will not work in node, etc.
+
 const timeKeeper = (timeA, timeB) => {
   const timeSplit = time => {
     const date = time.substring(0, 10);
-    const hours = time.substring(11, 13);
-    const minutes = time.substring(14, 16);
-    const seconds = time.substring(17, 19);
+    const hours = parseInt(time.substring(11, 13));
+    const minutes = parseInt(time.substring(14, 16));
+    const seconds = parseInt(time.substring(17, 19));
+    const day = parseInt(date.substring(8, 10));
 
-    return { date, hours, minutes, seconds };
+    return { date, day, hours, minutes, seconds };
   };
 
-  const clockIn = timeSplit(timeA);
-  const clockOut = timeSplit(timeB);
+  const start = timeSplit(timeA);
+  const finish = timeSplit(timeB);
 
-  const headerRow = [
-    `HOUR_0`,
-    `HOUR_1`,
-    `HOUR_2`,
-    `HOUR_3`,
-    `HOUR_4`,
-    `HOUR_5`,
-    `HOUR_6`,
-    `HOUR_7`,
-    `HOUR_8`,
-    `HOUR_9`,
-    `HOUR_10`,
-    `HOUR_11`,
-    `HOUR_12`,
-    `HOUR_13`,
-    `HOUR_14`,
-    `HOUR_15`,
-    `HOUR_16`,
-    `HOUR_17`,
-    `HOUR_18`,
-    `HOUR_19`,
-    `HOUR_20`,
-    `HOUR_21`,
-    `HOUR_22`,
-    `HOUR_23`,
-  ];
-
-  const testRow = [
-    `2021 - 12 - 24`,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1459,
-    3600,
-    3600,
-    3600,
-    3600,
-    3600,
-    3600,
-    3600,
-    3600,
-    3230,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+  const hours = [
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    21, 22, 23,
   ];
 
   const contentRow = [];
 
-  for (header of headerRow) {
-    if (parseInt(header.replace(`HOUR_`, ``)) < parseInt(clockIn.hours)) {
-      contentRow.push('0');
-    } else if (
-      parseInt(header.replace(`HOUR_`, ``)) === parseInt(clockIn.hours)
-    ) {
-      contentRow.push(
-        (
-          60 * (60 - parseInt(clockIn.minutes)) -
-          parseInt(clockIn.seconds)
-        ).toString()
-      );
-    } else if (
-      parseInt(header.replace(`HOUR_`, ``)) < parseInt(clockOut.hours)
-    ) {
-      contentRow.push('3600');
-    } else if (
-      parseInt(header.replace(`HOUR_`, ``)) === parseInt(clockOut.hours)
-    ) {
-      contentRow.push(
-        (
-          60 * parseInt(clockOut.minutes) +
-          parseInt(clockOut.seconds)
-        ).toString()
-      );
-    } else contentRow.push('0');
+  if (start.date === finish.date) {
+    // As both dates passed into the function are the same, there will only be one line in the csv file.
+
+    const onlyRow = [];
+
+    for (const hour of hours) {
+      if (hour < start.hours) {
+        onlyRow.push('0');
+      } else if (hour === start.hours) {
+        if (start.hours === finish.hours) {
+          onlyRow.push(
+            60 * (finish.minutes - start.minutes) +
+              (finish.seconds - start.seconds)
+          );
+        } else {
+          onlyRow.push(60 * (60 - start.minutes) - start.seconds);
+        }
+      } else if (hour < finish.hours) {
+        onlyRow.push('3600');
+      } else if (hour === finish.hours) {
+        onlyRow.push(60 * finish.minutes + finish.seconds);
+      } else onlyRow.push('0');
+    }
+
+    contentRow.push(onlyRow);
+  } else {
+    // As both dates are not the same, the csv file will contain multiple lines.
+
+    for (let i = start.day; i <= finish.day; i++) {
+      let row = [];
+      if (i === start.day) {
+        for (const hour of hours) {
+          if (hour < start.hours) {
+            row.push('0');
+          } else if (hour === start.hours) {
+            row.push(60 * (60 - start.minutes) - start.seconds);
+          } else {
+            row.push(`3600`);
+          }
+        }
+      } else if (i < finish.day && i !== finish.day) {
+        for (const hour of hours) {
+          row.push(`3600`);
+        }
+      } else if (i === finish.day) {
+        for (const hour of hours) {
+          if (hour < finish.hours) {
+            row.push('3600');
+          } else if (hour === finish.hours) {
+            row.push(60 * finish.minutes + finish.seconds);
+          } else {
+            row.push(`0`);
+          }
+        }
+      }
+      contentRow.push(row);
+    }
   }
 
   const rows = [
-    [`DATE`, ...headerRow],
-    [testRow],
-    [clockIn.date, ...contentRow],
+    [`DATE`, ...hours.map(hour => `HOUR_${hour}`)],
+    ...contentRow.map((row, index, array) => {
+      if (index + 1 === array.length) {
+        return [finish.date, ...row];
+      } else {
+        return [start.date, ...row];
+      }
+    }),
   ];
 
-  let csvContent =
+  const csvContent =
     'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
 
-  var encodedUri = encodeURI(csvContent);
+  const encodedUri = encodeURI(csvContent);
+
   window.open(encodedUri);
 };
 
-timeKeeper(`2021-12-24 08:35:41`, `2021-12-24 17:53:50`);
+// TODO: use string literals to add date strings into large number to support larger time spans over different months and years
+// TODO: refactor codebase to make it less ugly
