@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"strconv"
+	"strings"
 )
 
 func isNumberCharCodeRange(number int) bool {
@@ -27,23 +27,25 @@ func convertCharCodeToInt(number int) int {
 	return 100
 }
 
-func convertDenaryNumberToRequiredBase(number int, base string) string {
+func convertDenaryNumberToRequiredBase(number int, base int) string {
 	var output = ""
-	for number > 3 {
-		output += strconv.Itoa(number % 3)
-		number = number / 3
+	for number > 1 {
+
+		output += strconv.Itoa(number % base)
+		number = number - number%base
+		number = number / base
 	}
 
-	output += strconv.Itoa(number % 3)
+	output += strconv.Itoa(number % base)
 
 	return output
 }
 
-func convertNumber(number string, inputBase int, outputBase int) int {
+func convertNumber(number string, inputBase int, outputBase int) string {
 	var output int
 
 	if inputBase == outputBase {
-		return output
+		return number
 	}
 
 	// reverse string fas second for loop goes from left to right
@@ -59,11 +61,14 @@ func convertNumber(number string, inputBase int, outputBase int) int {
 	}
 
 	if outputBase == 10 {
-		return output
+
+		strOutput := strconv.Itoa(output)
+
+		return strOutput
 	}
 
 	// convert to required base
-	outputInCorrectBase := convertDenaryNumberToRequiredBase(output, "3")
+	outputInCorrectBase := convertDenaryNumberToRequiredBase(output, outputBase)
 
 	runess := []rune(outputInCorrectBase)
 	for i, j := 0, len(outputInCorrectBase)-1; i < j; i, j = i+1, j-1 {
@@ -71,15 +76,9 @@ func convertNumber(number string, inputBase int, outputBase int) int {
 	}
 	outputInCorrectBase = string(runess)
 
-	new, err := strconv.Atoi(outputInCorrectBase)
+	// remove leading zeros as not needed in any base
+	outputInCorrectBase = strings.TrimLeft(outputInCorrectBase, "0")
 
-	if err == nil {
-		return new
-	}
+	return outputInCorrectBase
 
-	return 1
-}
-
-func main() {
-	fmt.Println(convertNumber("1010101101002", 2, 3))
 }
