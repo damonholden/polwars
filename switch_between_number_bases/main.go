@@ -1,29 +1,34 @@
 package main
 
 import (
+	"errors"
 	"math"
 	"strconv"
 	"strings"
 )
 
-func convertNumber(number string, inputBase int, outputBase int) string {
-
+func convertNumber(number string, inputBase int, outputBase int) (string, error) {
 	if inputBase == outputBase {
-		return number
+		return number, nil
 	}
 
-	reversedNumber := reverseNumber(number)
-	baseTenOutput := convertNumberToBaseTen(reversedNumber, inputBase)
+	if inputBase != 10 {
+		numberConvertedToBaseTen, error := convertNumberToBaseTen(number, inputBase)
+
+		if error != nil {
+			return "", error
+		}
+
+		number = numberConvertedToBaseTen
+	}
 
 	if outputBase == 10 {
-		return baseTenOutput
+		return number, nil
 	}
 
-	outputInCorrectBase := convertDenaryNumberToRequiredBase(baseTenOutput, outputBase)
-	outputInCorrectBase = reverseNumber(outputInCorrectBase)
-	outputInCorrectBase = strings.TrimLeft(outputInCorrectBase, "0")
+	numberConvertedToOutputBase := convertBaseTenNumberToRequiredBase(number, outputBase)
 
-	return outputInCorrectBase
+	return numberConvertedToOutputBase, nil
 
 }
 
@@ -35,36 +40,44 @@ func reverseNumber(number string) string {
 	return string(runes)
 }
 
-func convertNumberToBaseTen(reversedNumber string, base int) string {
-	var convertedNumber int
-	for i := 0; i < len(reversedNumber); i++ {
-		convertedNumber += convertCharCodeToInt(int(reversedNumber[i])) * int(math.Pow(float64(base), float64(i)))
+func convertNumberToBaseTen(number string, base int) (string, error) {
+	var numberConvertedToBaseTen int
+
+	for i, j := len(number)-1, 0; i >= 0; i, j = i-1, j+1 {
+		charAsBaseTenValue, error := convertCharCodeToBaseTenValue(int(number[i]))
+
+		if error != nil {
+			return "", error
+		}
+
+		multiplier := int(math.Pow(float64(base), float64(j)))
+
+		numberConvertedToBaseTen += charAsBaseTenValue * multiplier
 	}
-	return strconv.Itoa(convertedNumber)
+	return strconv.Itoa(numberConvertedToBaseTen), nil
 }
 
-func isNumberCharCodeRange(number int) bool {
-	return number > 47 && number < 58
-
+func charCodeIsInNumberCharCodeRange(charCode int) bool {
+	return charCode > 47 && charCode < 58
 }
 
-func isInLetterCharCodeRange(number int) bool {
-	return number > 64 && number < 91
+func charCodeIsInLetterCharCodeRange(charCode int) bool {
+	return charCode > 64 && charCode < 91
 }
 
-func convertCharCodeToInt(number int) int {
-	if isNumberCharCodeRange(number) {
-		return number - 48
+func convertCharCodeToBaseTenValue(charCode int) (int, error) {
+	if charCodeIsInNumberCharCodeRange(charCode) {
+		return charCode - 48, nil
 	}
 
-	if isInLetterCharCodeRange(number) {
-		return number - 55
+	if charCodeIsInLetterCharCodeRange(charCode) {
+		return charCode - 55, nil
 	}
 
-	return 100
+	return 0, errors.New("invalid char code. Must be between 0 and 9 or A and Z")
 }
 
-func convertDenaryNumberToRequiredBase(number string, base int) string {
+func convertBaseTenNumberToRequiredBase(number string, base int) string {
 	numberAsInt, error := strconv.Atoi(number)
 
 	if error != nil {
@@ -80,6 +93,9 @@ func convertDenaryNumberToRequiredBase(number string, base int) string {
 	}
 
 	output += strconv.Itoa(numberAsInt % base)
+
+	output = reverseNumber(output)
+	output = strings.TrimLeft(output, "0")
 
 	return output
 }
