@@ -13,23 +13,14 @@ func convertNumber(number string, inputBase int, outputBase int) string {
 	}
 
 	reversedNumber := reverseNumber(number)
-
 	baseTenOutput := convertNumberToBaseTen(reversedNumber, inputBase)
 
 	if outputBase == 10 {
 		return baseTenOutput
 	}
 
-	// convert to required base
 	outputInCorrectBase := convertDenaryNumberToRequiredBase(baseTenOutput, outputBase)
-
-	runess := []rune(outputInCorrectBase)
-	for i, j := 0, len(outputInCorrectBase)-1; i < j; i, j = i+1, j-1 {
-		runess[i], runess[j] = runess[j], runess[i]
-	}
-	outputInCorrectBase = string(runess)
-
-	// remove leading zeros as not needed in any base
+	outputInCorrectBase = reverseNumber(outputInCorrectBase)
 	outputInCorrectBase = strings.TrimLeft(outputInCorrectBase, "0")
 
 	return outputInCorrectBase
