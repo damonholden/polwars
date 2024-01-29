@@ -6,6 +6,52 @@ import (
 	"strings"
 )
 
+func convertNumber(number string, inputBase int, outputBase int) string {
+
+	if inputBase == outputBase {
+		return number
+	}
+
+	reversedNumber := reverseNumber(number)
+
+	baseTenOutput := convertNumberToBaseTen(reversedNumber, inputBase)
+
+	if outputBase == 10 {
+		return baseTenOutput
+	}
+
+	// convert to required base
+	outputInCorrectBase := convertDenaryNumberToRequiredBase(baseTenOutput, outputBase)
+
+	runess := []rune(outputInCorrectBase)
+	for i, j := 0, len(outputInCorrectBase)-1; i < j; i, j = i+1, j-1 {
+		runess[i], runess[j] = runess[j], runess[i]
+	}
+	outputInCorrectBase = string(runess)
+
+	// remove leading zeros as not needed in any base
+	outputInCorrectBase = strings.TrimLeft(outputInCorrectBase, "0")
+
+	return outputInCorrectBase
+
+}
+
+func reverseNumber(number string) string {
+	runes := []rune(number)
+	for i, j := 0, len(number)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
+}
+
+func convertNumberToBaseTen(reversedNumber string, base int) string {
+	var convertedNumber int
+	for i := 0; i < len(reversedNumber); i++ {
+		convertedNumber += convertCharCodeToInt(int(reversedNumber[i])) * int(math.Pow(float64(base), float64(i)))
+	}
+	return strconv.Itoa(convertedNumber)
+}
+
 func isNumberCharCodeRange(number int) bool {
 	return number > 47 && number < 58
 
@@ -27,58 +73,22 @@ func convertCharCodeToInt(number int) int {
 	return 100
 }
 
-func convertDenaryNumberToRequiredBase(number int, base int) string {
-	var output = ""
-	for number > 1 {
+func convertDenaryNumberToRequiredBase(number string, base int) string {
+	numberAsInt, error := strconv.Atoi(number)
 
-		output += strconv.Itoa(number % base)
-		number = number - number%base
-		number = number / base
+	if error != nil {
+		return "Error"
 	}
 
-	output += strconv.Itoa(number % base)
+	var output = ""
+
+	for numberAsInt > 1 {
+		output += strconv.Itoa(numberAsInt % base)
+		numberAsInt = numberAsInt - numberAsInt%base
+		numberAsInt = numberAsInt / base
+	}
+
+	output += strconv.Itoa(numberAsInt % base)
 
 	return output
-}
-
-func convertNumber(number string, inputBase int, outputBase int) string {
-	var output int
-
-	if inputBase == outputBase {
-		return number
-	}
-
-	// reverse string fas second for loop goes from left to right
-	runes := []rune(number)
-	for i, j := 0, len(number)-1; i < j; i, j = i+1, j-1 {
-		runes[i], runes[j] = runes[j], runes[i]
-	}
-	number = string(runes)
-
-	// convert to base 10
-	for i := 0; i < len(number); i++ {
-		output += convertCharCodeToInt(int(number[i])) * int(math.Pow(float64(inputBase), float64(i)))
-	}
-
-	if outputBase == 10 {
-
-		strOutput := strconv.Itoa(output)
-
-		return strOutput
-	}
-
-	// convert to required base
-	outputInCorrectBase := convertDenaryNumberToRequiredBase(output, outputBase)
-
-	runess := []rune(outputInCorrectBase)
-	for i, j := 0, len(outputInCorrectBase)-1; i < j; i, j = i+1, j-1 {
-		runess[i], runess[j] = runess[j], runess[i]
-	}
-	outputInCorrectBase = string(runess)
-
-	// remove leading zeros as not needed in any base
-	outputInCorrectBase = strings.TrimLeft(outputInCorrectBase, "0")
-
-	return outputInCorrectBase
-
 }
