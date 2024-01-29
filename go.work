@@ -1,1 +1,3 @@
 go 1.21.1
+
+use ./switch_between_number_bases
