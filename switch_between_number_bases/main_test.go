@@ -4,6 +4,15 @@ import (
 	"testing"
 )
 
+func TestBaseTenToSixteen(t *testing.T) {
+	expected := "1B"
+	output, _ := convertNumber("27", 10, 16)
+
+	if output != expected {
+		t.Errorf("Expected %s, got %s", expected, output)
+	}
+}
+
 func TestBaseTwoToThree(t *testing.T) {
 	expected := "21112000"
 	output, _ := convertNumber("1010101101001", 2, 3)

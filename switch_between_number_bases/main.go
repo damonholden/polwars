@@ -29,15 +29,6 @@ func convertNumber(number string, inputBase int, outputBase int) (string, error)
 	numberConvertedToOutputBase := convertBaseTenNumberToRequiredBase(number, outputBase)
 
 	return numberConvertedToOutputBase, nil
-
-}
-
-func reverseNumber(number string) string {
-	runes := []rune(number)
-	for i, j := 0, len(number)-1; i < j; i, j = i+1, j-1 {
-		runes[i], runes[j] = runes[j], runes[i]
-	}
-	return string(runes)
 }
 
 func convertNumberToBaseTen(number string, base int) (string, error) {
@@ -57,14 +48,6 @@ func convertNumberToBaseTen(number string, base int) (string, error) {
 	return strconv.Itoa(numberConvertedToBaseTen), nil
 }
 
-func charCodeIsInNumberCharCodeRange(charCode int) bool {
-	return charCode > 47 && charCode < 58
-}
-
-func charCodeIsInLetterCharCodeRange(charCode int) bool {
-	return charCode > 64 && charCode < 91
-}
-
 func convertCharCodeToBaseTenValue(charCode int) (int, error) {
 	if charCodeIsInNumberCharCodeRange(charCode) {
 		return charCode - 48, nil
@@ -77,6 +60,24 @@ func convertCharCodeToBaseTenValue(charCode int) (int, error) {
 	return 0, errors.New("invalid char code. Must be between 0 and 9 or A and Z")
 }
 
+func convertBaseTenNumberToChar(number int) string {
+	if number < 10 {
+		return strconv.Itoa(number)
+	}
+
+	character := 'A' + rune(number-10)
+
+	return string(character)
+}
+
+func charCodeIsInNumberCharCodeRange(charCode int) bool {
+	return charCode > 47 && charCode < 58
+}
+
+func charCodeIsInLetterCharCodeRange(charCode int) bool {
+	return charCode > 64 && charCode < 91
+}
+
 func convertBaseTenNumberToRequiredBase(number string, base int) string {
 	numberAsInt, error := strconv.Atoi(number)
 
@@ -87,7 +88,7 @@ func convertBaseTenNumberToRequiredBase(number string, base int) string {
 	var output = ""
 
 	for numberAsInt > 1 {
-		output += strconv.Itoa(numberAsInt % base)
+		output += convertBaseTenNumberToChar(numberAsInt % base)
 		numberAsInt = numberAsInt - numberAsInt%base
 		numberAsInt = numberAsInt / base
 	}
@@ -98,4 +99,12 @@ func convertBaseTenNumberToRequiredBase(number string, base int) string {
 	output = strings.TrimLeft(output, "0")
 
 	return output
+}
+
+func reverseNumber(number string) string {
+	runes := []rune(number)
+	for i, j := 0, len(number)-1; i < j; i, j = i+1, j-1 {
+		runes[i], runes[j] = runes[j], runes[i]
+	}
+	return string(runes)
 }
