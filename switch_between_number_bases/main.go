@@ -25,11 +25,7 @@ func convertNumber(number string, inputBase int, outputBase int) (string, error)
 	}
 
 	if inputBase != 10 {
-		numberConvertedToBaseTen, err := convertNumberToBaseTen(number, inputBase)
-
-		if err != nil {
-			return "", err
-		}
+		numberConvertedToBaseTen := convertNumberToBaseTen(number, inputBase)
 
 		number = numberConvertedToBaseTen
 	}
@@ -63,7 +59,7 @@ func checkIfAllCharactersCanBeHandled(number string) error {
 	return nil
 }
 
-func convertNumberToBaseTen(number string, base int) (string, error) {
+func convertNumberToBaseTen(number string, base int) string {
 	var numberConvertedToBaseTen int
 
 	for i, j := len(number)-1, 0; i >= 0; i, j = i-1, j+1 {
@@ -73,7 +69,7 @@ func convertNumberToBaseTen(number string, base int) (string, error) {
 
 		numberConvertedToBaseTen += charAsBaseTenValue * multiplier
 	}
-	return strconv.Itoa(numberConvertedToBaseTen), nil
+	return strconv.Itoa(numberConvertedToBaseTen)
 }
 
 func convertCharCodeToBaseTenValue(charCode int) int {
