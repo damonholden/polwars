@@ -85,3 +85,37 @@ func TestThrownErrorIfCharacterDoesNotFitInBase(t *testing.T) {
 		t.Errorf("Expected error %s, got %s", expected, err)
 	}
 }
+
+func TestThrownErrorIfInputBaseIsTooLow(t *testing.T) {
+	expected := errors.New("input base must be between 2 and 36")
+	_, err := convertNumber("111", 1, 10)
+	if err.Error() != expected.Error() {
+
+		t.Errorf("Expected error %s, got %s", expected, err)
+	}
+}
+func TestThrownErrorIfInputBaseIsTooHigh(t *testing.T) {
+	expected := errors.New("input base must be between 2 and 36")
+	_, err := convertNumber("111", 45, 10)
+	if err.Error() != expected.Error() {
+
+		t.Errorf("Expected error %s, got %s", expected, err)
+	}
+}
+
+func TestThrownErrorIfOutputBaseIsTooLow(t *testing.T) {
+	expected := errors.New("output base must be between 2 and 36")
+	_, err := convertNumber("111", 2, 1)
+	if err.Error() != expected.Error() {
+
+		t.Errorf("Expected error %s, got %s", expected, err)
+	}
+}
+func TestThrownErrorIfOutputBaseIsTooHigh(t *testing.T) {
+	expected := errors.New("output base must be between 2 and 36")
+	_, err := convertNumber("111", 2, 68)
+	if err.Error() != expected.Error() {
+
+		t.Errorf("Expected error %s, got %s", expected, err)
+	}
+}

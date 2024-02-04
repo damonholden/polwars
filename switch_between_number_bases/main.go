@@ -12,16 +12,14 @@ func convertNumber(number string, inputBase int, outputBase int) (string, error)
 		return number, nil
 	}
 
-	err := checkForErrorsInInput(number, inputBase)
+	err := checkForErrorsInInput(number, inputBase, outputBase)
 
 	if err != nil {
 		return "", err
 	}
 
 	if inputBase != 10 {
-		numberConvertedToBaseTen := convertNumberToBaseTen(number, inputBase)
-
-		number = numberConvertedToBaseTen
+		number = convertNumberToBaseTen(number, inputBase)
 	}
 
 	if outputBase == 10 {
@@ -33,7 +31,15 @@ func convertNumber(number string, inputBase int, outputBase int) (string, error)
 	return numberConvertedToOutputBase, nil
 }
 
-func checkForErrorsInInput(number string, inputBase int) error {
+func checkForErrorsInInput(number string, inputBase int, outputBase int) error {
+	if !baseIsValid(inputBase) {
+		return errors.New("input base must be between 2 and 36")
+	}
+
+	if !baseIsValid(outputBase) {
+		return errors.New("output base must be between 2 and 36")
+	}
+
 	charErr := checkIfAllCharactersCanBeHandled(number)
 
 	if charErr != nil {
@@ -47,6 +53,14 @@ func checkForErrorsInInput(number string, inputBase int) error {
 	}
 
 	return nil
+}
+
+func baseIsValid(base int) bool {
+	if base < 2 || base > 36 {
+		return false
+	}
+
+	return true
 }
 
 func checkIfNumberIsValidForBase(number string, inputBase int) error {
