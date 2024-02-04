@@ -8,11 +8,11 @@ import (
 )
 
 func convertNumber(number string, inputBase int, outputBase int) (string, error) {
+	err := checkForErrorsInInput(number, inputBase, outputBase)
+
 	if inputBase == outputBase {
 		return number, nil
 	}
-
-	err := checkForErrorsInInput(number, inputBase, outputBase)
 
 	if err != nil {
 		return "", err
