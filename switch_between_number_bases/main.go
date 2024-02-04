@@ -40,16 +40,12 @@ func checkForErrorsInInput(number string, inputBase int, outputBase int) error {
 		return errors.New("output base must be between 2 and 36")
 	}
 
-	charErr := checkIfAllCharactersCanBeHandled(number)
-
-	if charErr != nil {
-		return charErr
+	if !allCharactersCanBeHandled(number) {
+		return errors.New("invalid char code. Must be between 0 and 9 or A and Z")
 	}
 
-	numberErr := checkIfNumberIsValidForBase(number, inputBase)
-
-	if numberErr != nil {
-		return numberErr
+	if !numberIsValidForBase(number, inputBase) {
+		return errors.New("digit is too large for given base")
 	}
 
 	return nil
@@ -63,24 +59,24 @@ func baseIsValid(base int) bool {
 	return true
 }
 
-func checkIfNumberIsValidForBase(number string, inputBase int) error {
+func numberIsValidForBase(number string, inputBase int) bool {
 	for _, char := range number {
 		if convertCharCodeToBaseTenValue(int(char)) >= inputBase {
-			return errors.New("digit is too large for given base")
+			return false
 		}
 	}
 
-	return nil
+	return true
 }
 
-func checkIfAllCharactersCanBeHandled(number string) error {
+func allCharactersCanBeHandled(number string) bool {
 	for _, char := range number {
 		if !charCodeIsInLetterCharCodeRange(int(char)) && !charCodeIsInNumberCharCodeRange(int(char)) {
-			return errors.New("invalid char code. Must be between 0 and 9 or A and Z")
+			return false
 		}
 	}
 
-	return nil
+	return true
 }
 
 func convertNumberToBaseTen(number string, base int) string {
@@ -126,7 +122,7 @@ func convertBaseTenNumberToRequiredBase(number string, base int) string {
 	numberAsInt, err := strconv.Atoi(number)
 
 	if err != nil {
-		return "Error"
+		return "Failed converting base 10 version of input to an integer"
 	}
 
 	var output = ""
@@ -138,7 +134,6 @@ func convertBaseTenNumberToRequiredBase(number string, base int) string {
 	}
 
 	output += strconv.Itoa(numberAsInt % base)
-
 	output = reverseNumber(output)
 	output = strings.TrimLeft(output, "0")
 
