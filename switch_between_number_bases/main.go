@@ -129,7 +129,7 @@ func convertBaseTenNumberToRequiredBase(number string, base int) string {
 
 	for numberAsInt > 1 {
 		output += convertBaseTenNumberToChar(numberAsInt % base)
-		numberAsInt = numberAsInt - numberAsInt%base
+		numberAsInt = numberAsInt - (numberAsInt % base)
 		numberAsInt = numberAsInt / base
 	}
 
