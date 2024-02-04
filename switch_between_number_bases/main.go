@@ -2,20 +2,21 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
 )
 
 func convertNumber(number string, inputBase int, outputBase int) (string, error) {
-	err := checkForErrorsInInput(number, inputBase, outputBase)
+	inputError := checkForErrorsInInput(number, inputBase, outputBase)
+
+	if inputError != nil {
+		return "", inputError
+	}
 
 	if inputBase == outputBase {
 		return number, nil
-	}
-
-	if err != nil {
-		return "", err
 	}
 
 	if inputBase != 10 {
@@ -26,7 +27,11 @@ func convertNumber(number string, inputBase int, outputBase int) (string, error)
 		return number, nil
 	}
 
-	numberConvertedToOutputBase := convertBaseTenNumberToRequiredBase(number, outputBase)
+	numberConvertedToOutputBase, conversionError := convertBaseTenNumberToRequiredBase(number, outputBase)
+
+	if conversionError != nil {
+		return "", fmt.Errorf("number conversion failed because of the following error: %w", conversionError)
+	}
 
 	return numberConvertedToOutputBase, nil
 }
@@ -118,11 +123,11 @@ func charCodeIsInLetterCharCodeRange(charCode int) bool {
 	return charCode > 64 && charCode < 91
 }
 
-func convertBaseTenNumberToRequiredBase(number string, base int) string {
+func convertBaseTenNumberToRequiredBase(number string, base int) (string, error) {
 	numberAsInt, err := strconv.Atoi(number)
 
 	if err != nil {
-		return "Failed converting base 10 version of input to an integer"
+		return "", err
 	}
 
 	var output = ""
@@ -137,7 +142,7 @@ func convertBaseTenNumberToRequiredBase(number string, base int) string {
 	output = reverseNumber(output)
 	output = strings.TrimLeft(output, "0")
 
-	return output
+	return output, nil
 }
 
 func reverseNumber(number string) string {
