@@ -1,3 +1,3 @@
-module switch_between_number_bases
+module convertNumber
 
-go 1.21.1
+go 1.21.6
