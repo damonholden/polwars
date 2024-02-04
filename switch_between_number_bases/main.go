@@ -12,11 +12,23 @@ func convertNumber(number string, inputBase int, outputBase int) (string, error)
 		return number, nil
 	}
 
-	if inputBase != 10 {
-		numberConvertedToBaseTen, error := convertNumberToBaseTen(number, inputBase)
+	err := checkIfAllCharactersCanBeHandled(number)
 
-		if error != nil {
-			return "", error
+	if err != nil {
+		return "", err
+	}
+
+	errs := checkIfNumberIsValidForBase(number, inputBase)
+
+	if errs != nil {
+		return "", errs
+	}
+
+	if inputBase != 10 {
+		numberConvertedToBaseTen, err := convertNumberToBaseTen(number, inputBase)
+
+		if err != nil {
+			return "", err
 		}
 
 		number = numberConvertedToBaseTen
@@ -31,15 +43,31 @@ func convertNumber(number string, inputBase int, outputBase int) (string, error)
 	return numberConvertedToOutputBase, nil
 }
 
+func checkIfNumberIsValidForBase(number string, inputBase int) error {
+	for _, char := range number {
+		if convertCharCodeToBaseTenValue(int(char)) >= inputBase {
+			return errors.New("digit is too large for given base")
+		}
+	}
+
+	return nil
+}
+
+func checkIfAllCharactersCanBeHandled(number string) error {
+	for _, char := range number {
+		if !charCodeIsInLetterCharCodeRange(int(char)) && !charCodeIsInNumberCharCodeRange(int(char)) {
+			return errors.New("invalid char code. Must be between 0 and 9 or A and Z")
+		}
+	}
+
+	return nil
+}
+
 func convertNumberToBaseTen(number string, base int) (string, error) {
 	var numberConvertedToBaseTen int
 
 	for i, j := len(number)-1, 0; i >= 0; i, j = i-1, j+1 {
-		charAsBaseTenValue, error := convertCharCodeToBaseTenValue(int(number[i]))
-
-		if error != nil {
-			return "", error
-		}
+		charAsBaseTenValue := convertCharCodeToBaseTenValue(int(number[i]))
 
 		multiplier := int(math.Pow(float64(base), float64(j)))
 
@@ -48,16 +76,12 @@ func convertNumberToBaseTen(number string, base int) (string, error) {
 	return strconv.Itoa(numberConvertedToBaseTen), nil
 }
 
-func convertCharCodeToBaseTenValue(charCode int) (int, error) {
+func convertCharCodeToBaseTenValue(charCode int) int {
 	if charCodeIsInNumberCharCodeRange(charCode) {
-		return charCode - 48, nil
+		return charCode - 48
 	}
 
-	if charCodeIsInLetterCharCodeRange(charCode) {
-		return charCode - 55, nil
-	}
-
-	return 0, errors.New("invalid char code. Must be between 0 and 9 or A and Z")
+	return charCode - 55
 }
 
 func convertBaseTenNumberToChar(number int) string {
@@ -79,9 +103,9 @@ func charCodeIsInLetterCharCodeRange(charCode int) bool {
 }
 
 func convertBaseTenNumberToRequiredBase(number string, base int) string {
-	numberAsInt, error := strconv.Atoi(number)
+	numberAsInt, err := strconv.Atoi(number)
 
-	if error != nil {
+	if err != nil {
 		return "Error"
 	}
 

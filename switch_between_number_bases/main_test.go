@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -46,5 +47,41 @@ func TestBaseTenToTwo(t *testing.T) {
 
 	if output != expected {
 		t.Errorf("Expected %s, got %s", expected, output)
+	}
+}
+
+func TestConversionOfLargeBaseThirtySixNumberToBaseTwo(t *testing.T) {
+	expected := "10000001101111110000111111111111"
+	output, _ := convertNumber("ZZZZZZ", 36, 2)
+
+	if output != expected {
+		t.Errorf("Expected %s, got %s", expected, output)
+	}
+}
+
+func TestConversionOfBaseTwoNumberToBaseThirtySix(t *testing.T) {
+	expected := "ZZZZZZ"
+	output, _ := convertNumber("10000001101111110000111111111111", 2, 36)
+
+	if output != expected {
+		t.Errorf("Expected %s, got %s", expected, output)
+	}
+}
+
+func TestThrownErrorIfInValidCharacter(t *testing.T) {
+	expected := errors.New("invalid char code. Must be between 0 and 9 or A and Z")
+	_, err := convertNumber(".", 2, 10)
+	if err.Error() != expected.Error() {
+
+		t.Errorf("Expected error %s, got %s", expected, err)
+	}
+}
+
+func TestThrownErrorIfCharacterDoesNotFitInBase(t *testing.T) {
+	expected := errors.New("digit is too large for given base")
+	_, err := convertNumber("2", 2, 10)
+	if err.Error() != expected.Error() {
+
+		t.Errorf("Expected error %s, got %s", expected, err)
 	}
 }
